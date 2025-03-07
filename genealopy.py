@@ -3,24 +3,23 @@ import os
 import curses
 import uuid
 
+data = yaml.safe_load(open("genealopy.yml", "r"))
+
 if not os.path.isfile("genealopy.yml"):
     template = {"individuals": [], "relationships": []}
     with open("genealopy.yml", "w") as file:
         yaml.dump(template, file, default_flow_style = False)
 
 def uuid_to_individual(uuid):
-    data = yaml.safe_load(open("genealopy.yml", "r"))
     return next((ind for ind in data["individuals"] if ind["uuid"] == uuid), None)
 
 def new_individual(identifier, name, birthplace, birthdate, deathdate, sex):
     individual = {"uuid": identifier, "name": name, "birth": {"place": birthplace, "date": birthdate}, "deathdate": deathdate, "sex": sex}
-    data = yaml.safe_load(open("genealopy.yml", "r"))
     data["individuals"].append(individual)
     with open("genealopy.yml", "w") as file:
         yaml.dump(data, file, default_flow_style = False)
 
 def delete_individual(uuid):
-    data = yaml.safe_load(open("genealopy.yml", "r"))
     data["individuals"] = [ind for ind in data["individuals"] if ind["uuid"] != uuid]
     data["relationships"] = [rel for rel in data["relationships"] if rel["father"] != uuid and rel["mother"] != uuid and rel["child"] != uuid]
     with open("genealopy.yml", "w") as file:
@@ -28,13 +27,11 @@ def delete_individual(uuid):
 
 def set_father_mother_child_relationship(identifier, father, mother, child):
     relationship = {"uuid": identifier, "father": father, "mother": mother, "child": child}
-    data = yaml.safe_load(open("genealopy.yml", "r"))
     data["relationships"].append(relationship)
     with open("genealopy.yml", "w") as file:
         yaml.dump(data, file, default_flow_style = False)
 
 def delete_father_mother_child_relationship(uuid):
-    data = yaml.safe_load(open("genealopy.yml", "r"))
     data["relationships"] = [rel for rel in data["relationships"] if rel["uuid"] != uuid]
     with open("genealopy.yml", "w") as file:
         yaml.dump(data, file, default_flow_style = False)
@@ -56,7 +53,7 @@ def create_centered_text_input(screen, height):
     return input_text
 
 def create_individual_list_selection(screen, height):
-    individual_list = yaml.safe_load(open("genealopy.yml", "r"))["individuals"]
+    individual_list = data["individuals"]
     selected_index = 0
     while True:
         for i, individual in enumerate(individual_list):
@@ -75,7 +72,7 @@ def create_individual_list_selection(screen, height):
             return individual_list[selected_index]
 
 def create_relationship_list_selection(screen, height):
-    relationship_list = yaml.safe_load(open("genealopy.yml", "r"))["relationships"]
+    relationship_list = data["relationships"]
     selected_index = 0
     while True:
         for i, relationship in enumerate(relationship_list):
@@ -221,7 +218,7 @@ def screen_function(screen):
             elif key == ord("2"):
                 continue
         elif key == ord("3"):
-            if len(yaml.safe_load(open("genealopy.yml", "r"))["individuals"]) == 0:
+            if len(data["individuals"]) == 0:
                 continue
             screen.clear()
             o = "================================= GENEALOPY - BY MONT ================================="
@@ -252,7 +249,7 @@ def screen_function(screen):
             elif key == ord("2"):
                 continue
         elif key == ord("4"):
-            if len(yaml.safe_load(open("genealopy.yml", "r"))["relationships"]) == 0:
+            if len(data["relationships"]) == 0:
                 continue
             screen.clear()
             o = "================================= GENEALOPY - BY MONT ================================="
